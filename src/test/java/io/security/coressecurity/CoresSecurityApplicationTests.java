@@ -1,0 +1,13 @@
+package io.security.coressecurity;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class CoresSecurityApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
