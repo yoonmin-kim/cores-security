@@ -2,8 +2,8 @@ package io.security.coressecurity.security.provider;
 
 import io.security.coressecurity.security.common.FormWebAuthenticationDetails;
 import io.security.coressecurity.security.service.AccountContext;
+import io.security.coressecurity.security.token.AjaxAuthenticationToken;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -12,11 +12,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
-public class CustomAuthenticationProvider implements AuthenticationProvider {
-
+public class AjaxAuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
@@ -31,12 +29,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Invalid Password");
         }
 
-        String secretKey = ((FormWebAuthenticationDetails) authentication.getDetails()).getSecretKey();
-        if (secretKey == null || !"secret".equals(secretKey)) {
-            throw new IllegalArgumentException("Invalid Secret");
-        }
-
-        return new UsernamePasswordAuthenticationToken(
+        return new AjaxAuthenticationToken(
                 accountContext.getAccount(),
                 null,
                 accountContext.getAuthorities());
@@ -44,6 +37,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+        return authentication.equals(AjaxAuthenticationToken.class);
     }
 }
