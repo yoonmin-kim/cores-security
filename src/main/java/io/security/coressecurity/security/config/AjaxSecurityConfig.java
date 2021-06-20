@@ -75,14 +75,24 @@ public class AjaxSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatcher("/api/**")
                 .authorizeRequests()
                 .antMatchers("/api/messages").hasRole("MANAGER")
-                .anyRequest().authenticated();
-        http
-                .addFilterBefore(authenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
-        http
-                .antMatcher("/api/**")
+                .anyRequest().authenticated()
+        .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint())
                 .accessDeniedHandler(accessDeniedHandler());
+//        http
+//               .addFilterBefore(authenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        customConfigurerAjax(http);
+    }
+
+    private void customConfigurerAjax(HttpSecurity http) throws Exception {
+        http
+                .apply(new AjaxLoginConfigurer<>())
+                .successHandlerAjax(authenticationSuccessHandler())
+                .failureHandlerAjax(authenticationFailureHandler())
+                .setAuthenticationManager(authenticationManagerBean())
+                .loginProcessingUrl("/api/login");
     }
 
     @Override
