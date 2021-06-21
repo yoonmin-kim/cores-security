@@ -1,20 +1,22 @@
 package io.security.coressecurity.controller.user;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class MessageController {
 
     @GetMapping("/messages")
-    public String mypage() throws Exception{
+    public String message() throws Exception{
         return "user/messages";
     }
 
-    @GetMapping("/api/messages")
+    @PostMapping("/api/messages")
     @ResponseBody
-    public String apiMessages() {
-        return "messages ok";
+    public ResponseEntity apiMessages() {
+        return ResponseEntity.ok().body("ok");
     }
 }
