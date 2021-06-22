@@ -37,21 +37,14 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import java.util.Arrays;
 import java.util.List;
 
-
+@RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private FormWebAuthenticationDetailsSource formWebAuthenticationDetailsSource;
-    @Autowired
-    private AuthenticationSuccessHandler formAuthenticationSuccessHandler;
-    @Autowired
-    private AuthenticationFailureHandler formAuthenticationFailureHandler;
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    public SecurityConfig() {
-    }
+    private final FormWebAuthenticationDetailsSource formWebAuthenticationDetailsSource;
+    private final AuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final AuthenticationFailureHandler customAuthenticationFailureHandler;
+    private final UserDetailsService userDetailsService;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -83,8 +76,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/login")
                 .loginProcessingUrl("/login_proc")
                 .authenticationDetailsSource(formWebAuthenticationDetailsSource)
-                .successHandler(formAuthenticationSuccessHandler)
-                .failureHandler(formAuthenticationFailureHandler)
+                .successHandler(customAuthenticationSuccessHandler)
+                .failureHandler(customAuthenticationFailureHandler)
                 .permitAll()
                 .and()
                 .exceptionHandling()
@@ -152,11 +145,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private AccessDecisionManager affirmativeBased() {
-        AffirmativeBased affirmativeBased = new AffirmativeBased(getAccessDecistionVoters());
+        AffirmativeBased affirmativeBased = new AffirmativeBased(getAccessDecisionVoters());
         return affirmativeBased;
     }
 
-    private List<AccessDecisionVoter<?>> getAccessDecistionVoters() {
+    private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
         return Arrays.asList(new RoleVoter());
     }
 
