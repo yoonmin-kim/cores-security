@@ -1,8 +1,11 @@
 package io.security.coressecurity.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.security.coressecurity.domain.AccountDTO;
+import io.security.coressecurity.domain.dto.AccountDTO;
 import io.security.coressecurity.security.token.AjaxAuthenticationToken;
+import io.security.coressecurity.util.WebUtil;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -20,30 +23,23 @@ public class AjaxLoginProcessingFilter extends AbstractAuthenticationProcessingF
     private ObjectMapper objectMapper = new ObjectMapper();
 
     public AjaxLoginProcessingFilter() {
-        super(new AntPathRequestMatcher("/api/login"));
+        super(new AntPathRequestMatcher("/api/login", "POST"));
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
 
-        if (!isAjax(request)) {
+        if (!HttpMethod.POST.name().equals(request.getMethod()) || !WebUtil.isAjax(request)) {
             throw new IllegalStateException("Authentication is not supported");
         }
 
         AccountDTO accountDTO = objectMapper.readValue(request.getReader(), AccountDTO.class);
         if (!hasText(accountDTO.getUsername()) || !hasText(accountDTO.getPassword())) {
-            throw new IllegalArgumentException("Username or Password is empty");
+            throw new AuthenticationServiceException("Username or Password is empty");
         }
 
         AjaxAuthenticationToken ajaxAuthenticationToken = new AjaxAuthenticationToken(accountDTO.getUsername(), accountDTO.getPassword());
 
         return getAuthenticationManager().authenticate(ajaxAuthenticationToken);
-    }
-
-    private boolean isAjax(HttpServletRequest request) {
-        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-with"))) {
-            return true;
-        }
-        return false;
     }
 }

@@ -1,6 +1,8 @@
 package io.security.coressecurity.security.handler;
 
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -16,15 +18,17 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        String errorMessage = "Invalid Username or Password";
+        String errMsg = "Invalid Username or Password";
 
-        if (exception instanceof BadCredentialsException) {
-            errorMessage = "Invalid Username or Password";
-        } else if (exception instanceof InsufficientAuthenticationException) {
-            errorMessage = "Invalid Secret Key";
+        if(exception instanceof BadCredentialsException) {
+            errMsg = "Invalid Username or Password";
+        } else if(exception instanceof DisabledException) {
+            errMsg = "Locked";
+        } else if(exception instanceof CredentialsExpiredException) {
+            errMsg = "Expired password";
         }
 
-        setDefaultFailureUrl("/login?error=true&exception=" + errorMessage);
+        setDefaultFailureUrl("/login?error=true&exception=" + errMsg);
 
         super.onAuthenticationFailure(request, response, exception);
     }
