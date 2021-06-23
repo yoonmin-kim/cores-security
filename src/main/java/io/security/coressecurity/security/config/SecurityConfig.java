@@ -1,13 +1,16 @@
 package io.security.coressecurity.security.config;
 
 import io.security.coressecurity.security.common.FormWebAuthenticationDetailsSource;
+import io.security.coressecurity.security.factory.UrlResourcesMapFactoryBean;
 import io.security.coressecurity.security.handler.AjaxAuthenticationFailureHandler;
 import io.security.coressecurity.security.handler.AjaxAuthenticationSuccessHandler;
 import io.security.coressecurity.security.handler.CustomAccessDeniedHandler;
 import io.security.coressecurity.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
 import io.security.coressecurity.security.provider.AjaxAuthenticationProvider;
 import io.security.coressecurity.security.provider.CustomAuthenticationProvider;
+import io.security.coressecurity.service.SecurityResourceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final AuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final AuthenticationFailureHandler customAuthenticationFailureHandler;
     private final UserDetailsService userDetailsService;
+    private final SecurityResourceService securityResourceService;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -66,9 +70,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/mypage").hasRole("USER")
-                .antMatchers("/messages").hasRole("MANAGER")
-                .antMatchers("/config").hasRole("ADMIN")
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
@@ -85,8 +86,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 .accessDeniedPage("/denied")
                 .accessDeniedHandler(accessDeniedHandler())
-//        .and()
-//                .addFilterBefore(customFilterSecurityInterceptor(), FilterSecurityInterceptor.class)
+        .and()
+                .addFilterBefore(customFilterSecurityInterceptor(), FilterSecurityInterceptor.class)
         ;
 
         http.csrf().disable();
@@ -154,8 +155,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
-        return new UrlFilterInvocationSecurityMetadatsSource();
+    public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() throws Exception {
+        return new UrlFilterInvocationSecurityMetadatsSource(urlResourcesMapFactoryBean().getObject());
+    }
+
+    private UrlResourcesMapFactoryBean urlResourcesMapFactoryBean() {
+        UrlResourcesMapFactoryBean urlResourcesMapFactoryBean = new UrlResourcesMapFactoryBean(securityResourceService);
+        return urlResourcesMapFactoryBean;
     }
 
 
