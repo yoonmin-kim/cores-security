@@ -4,6 +4,7 @@ import io.security.coressecurity.domain.dto.ResourcesDTO;
 import io.security.coressecurity.domain.entity.Resources;
 import io.security.coressecurity.domain.entity.Role;
 import io.security.coressecurity.repository.RoleRepository;
+import io.security.coressecurity.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
 import io.security.coressecurity.service.ResourcesService;
 import io.security.coressecurity.service.RoleService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class ResourcesController {
     private final ResourcesService resourcesService;
     private final RoleRepository roleRepository;
     private final RoleService roleService;
+    private final UrlFilterInvocationSecurityMetadatsSource filterInvocationSecurityMetadatsSource;
 
     @GetMapping(value="/admin/resources")
     public String getResources(Model model) throws Exception {
@@ -47,6 +49,7 @@ public class ResourcesController {
         resources.setRoleSet(roles);
 
         resourcesService.createResources(resources);
+        filterInvocationSecurityMetadatsSource.reload();
 
         return "redirect:/admin/resources";
     }
@@ -85,6 +88,7 @@ public class ResourcesController {
 
         Resources resources = resourcesService.getResources(Long.valueOf(id));
         resourcesService.deleteResources(Long.valueOf(id));
+        filterInvocationSecurityMetadatsSource.reload();
 
         return "redirect:/admin/resources";
     }
