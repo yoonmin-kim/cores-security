@@ -2,6 +2,7 @@ package io.security.coressecurity.security.config;
 
 import io.security.coressecurity.security.common.FormWebAuthenticationDetailsSource;
 import io.security.coressecurity.security.factory.UrlResourcesMapFactoryBean;
+import io.security.coressecurity.security.filter.PermitAllFilter;
 import io.security.coressecurity.security.handler.AjaxAuthenticationFailureHandler;
 import io.security.coressecurity.security.handler.AjaxAuthenticationSuccessHandler;
 import io.security.coressecurity.security.handler.CustomAccessDeniedHandler;
@@ -10,16 +11,12 @@ import io.security.coressecurity.security.provider.AjaxAuthenticationProvider;
 import io.security.coressecurity.security.provider.CustomAuthenticationProvider;
 import io.security.coressecurity.service.SecurityResourceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.access.vote.RoleVoter;
-import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -49,6 +46,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final AuthenticationFailureHandler customAuthenticationFailureHandler;
     private final UserDetailsService userDetailsService;
     private final SecurityResourceService securityResourceService;
+    private String[] permitAllResources = {"/", "/login", "/user/login/**"};
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -135,14 +133,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return commonAccessDeniedHandler;
     }
 
+//    @Bean
+//    public FilterSecurityInterceptor customFilterSecurityInterceptor() throws Exception {
+//
+//        FilterSecurityInterceptor filterSecurityInterceptor = new FilterSecurityInterceptor();
+//        filterSecurityInterceptor.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
+//        filterSecurityInterceptor.setAccessDecisionManager(affirmativeBased());
+//        filterSecurityInterceptor.setAuthenticationManager(authenticationManagerBean());
+//        return filterSecurityInterceptor;
+//    }
     @Bean
-    public FilterSecurityInterceptor customFilterSecurityInterceptor() throws Exception {
+    public PermitAllFilter customFilterSecurityInterceptor() throws Exception {
 
-        FilterSecurityInterceptor filterSecurityInterceptor = new FilterSecurityInterceptor();
-        filterSecurityInterceptor.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
-        filterSecurityInterceptor.setAccessDecisionManager(affirmativeBased());
-        filterSecurityInterceptor.setAuthenticationManager(authenticationManagerBean());
-        return filterSecurityInterceptor;
+        PermitAllFilter permitAllFilter = new PermitAllFilter(permitAllResources);
+        permitAllFilter.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
+        permitAllFilter.setAccessDecisionManager(affirmativeBased());
+        permitAllFilter.setAuthenticationManager(authenticationManagerBean());
+        return permitAllFilter;
     }
 
     private AccessDecisionManager affirmativeBased() {
