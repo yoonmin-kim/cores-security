@@ -2,8 +2,6 @@ package io.security.coressecurity.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.security.coressecurity.util.WebUtil;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +15,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
 
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
@@ -35,7 +34,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             response.getWriter().write(this.mapper.writeValueAsString(ResponseEntity.status(HttpStatus.FORBIDDEN)));
 
         } else {
-            String deniedUrl = errorPage + "?exception=" + accessDeniedException.getMessage();
+            String deniedUrl = errorPage + "?exception=" + URLEncoder.encode(accessDeniedException.getMessage(), "utf-8");
             redirectStrategy.sendRedirect(request, response, deniedUrl);
         }
     }
