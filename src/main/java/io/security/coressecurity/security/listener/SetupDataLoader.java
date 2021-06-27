@@ -1,14 +1,8 @@
 package io.security.coressecurity.security.listener;
 
-import io.security.coressecurity.domain.entity.Account;
-import io.security.coressecurity.domain.entity.Resources;
-import io.security.coressecurity.domain.entity.Role;
-import io.security.coressecurity.domain.entity.RoleHierarchy;
-import io.security.coressecurity.repository.ResourcesRepository;
-import io.security.coressecurity.repository.RoleHierarchyRepository;
-import io.security.coressecurity.repository.RoleRepository;
-import io.security.coressecurity.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.security.coressecurity.domain.entity.*;
+import io.security.coressecurity.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,25 +13,18 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@RequiredArgsConstructor
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
     private boolean alreadySetup = false;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private ResourcesRepository resourcesRepository;
-
-    @Autowired
-    private RoleHierarchyRepository roleHierarchyRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final ResourcesRepository resourcesRepository;
+    private final RoleHierarchyRepository roleHierarchyRepository;
+    private final AccessIpRepository accessIpRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private static AtomicInteger count = new AtomicInteger(0);
 
@@ -50,6 +37,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         }
 
         setupSecurityResources();
+        setupAccessIpData("127.0.0.1");
+        setupAccessIpData("0:0:0:0:0:0:0:1");
 
         alreadySetup = true;
     }
@@ -67,6 +56,27 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         Role userRole = createRoleIfNotFound("ROLE_USER", "사용자권한");
         createRoleHierarchyIfNotFound(managerRole, adminRole);
         createRoleHierarchyIfNotFound(userRole, managerRole);
+
+        Resources userResources = createResource("/mypage", "url", 0, userRole);
+        Resources managerResources = createResource("/messages", "url", 1, managerRole);
+        Resources adminResources = createResource("/config", "url", 2, adminRole);
+    }
+
+    @Transactional
+    public Resources createResource(String resourceName, String resourceType, int orderNum, Role role) {
+        Resources findResource = resourcesRepository.findByResourceName(resourceName);
+        if (findResource == null) {
+            Set<Role> roleSet = new HashSet<>();
+            roleSet.add(role);
+
+            findResource = Resources.builder()
+                                .resourceName(resourceName)
+                                .resourceType(resourceType)
+                                .orderNum(orderNum)
+                                .roleSet(roleSet)
+                                .build();
+        }
+        return resourcesRepository.save(findResource);
     }
 
     @Transactional
@@ -135,5 +145,15 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         RoleHierarchy childRoleHierarchy = roleHierarchyRepository.save(roleHierarchy);
         childRoleHierarchy.setParentName(parentRoleHierarchy);
+    }
+
+    private void setupAccessIpData(String ipAddress) {
+        AccessIp byIpAddress = accessIpRepository.findByIpAddress(ipAddress);
+        if (byIpAddress == null) {
+            AccessIp accessIp = AccessIp.builder()
+                    .ipAddress(ipAddress)
+                    .build();
+            accessIpRepository.save(accessIp);
+        }
     }
 }

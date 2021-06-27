@@ -9,6 +9,7 @@ import io.security.coressecurity.security.handler.CustomAccessDeniedHandler;
 import io.security.coressecurity.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
 import io.security.coressecurity.security.provider.AjaxAuthenticationProvider;
 import io.security.coressecurity.security.provider.CustomAuthenticationProvider;
+import io.security.coressecurity.security.voter.IpAddressVoter;
 import io.security.coressecurity.service.SecurityResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -161,6 +162,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
         List<AccessDecisionVoter<? extends Object>> accessDecisionVoters = new ArrayList<>();
+        accessDecisionVoters.add(new IpAddressVoter(securityResourceService));
         accessDecisionVoters.add(new RoleVoter());
         //accessDecisionVoters.add(roleVoter());
         return accessDecisionVoters;
