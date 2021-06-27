@@ -16,4 +16,6 @@ public interface UserService {
     AccountDTO getUser(Long id);
 
     void deleteUser(Long idx);
+
+    void order();
 }
