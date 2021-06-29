@@ -37,6 +37,20 @@ public class SecurityResourceService {
         return result;
     }
 
+    @Transactional
+    public LinkedHashMap<String, List<ConfigAttribute>> getMethodResourceList() {
+        LinkedHashMap<String, List<ConfigAttribute>> result = new LinkedHashMap<>();
+        List<Resources> resourcesList = resourcesRepository.findAllMethodResources();
+        resourcesList.forEach(resource -> {
+            List<ConfigAttribute> configAttributesList = new ArrayList<>();
+            resource.getRoleSet().forEach(role -> {
+                configAttributesList.add(new SecurityConfig(role.getRoleName()));
+            });
+            result.put(resource.getResourceName(), configAttributesList);
+        });
+        return result;
+    }
+
     public List<String> getAccessIpList() {
         return accessIpRepository.findAll().stream().map(accessIp -> accessIp.getIpAddress()).collect(Collectors.toList());
     }

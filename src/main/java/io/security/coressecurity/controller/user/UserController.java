@@ -24,11 +24,14 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
-    @GetMapping(value="/mypage")
+    @GetMapping("/mypage")
     public String myPage(@AuthenticationPrincipal Account account, Authentication authentication, Principal principal) throws Exception {
+        return "user/mypage";
+    }
 
+    @GetMapping("/order")
+    public String order() {
         userService.order();
-
         return "user/mypage";
     }
 
