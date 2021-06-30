@@ -13,6 +13,12 @@ public class MethodResourcesFactoryBean implements FactoryBean<LinkedHashMap<Str
     private final SecurityResourceService securityResourceService;
     private LinkedHashMap<String, List<ConfigAttribute>> resourceMap;
 
+    private String resourceType;
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
     @Override
     public LinkedHashMap<String, List<ConfigAttribute>> getObject(){
 
@@ -24,7 +30,7 @@ public class MethodResourcesFactoryBean implements FactoryBean<LinkedHashMap<Str
     }
 
     private void init() {
-        resourceMap = securityResourceService.getMethodResourceList();
+       resourceMap = securityResourceService.getResourceList(resourceType);
     }
 
     @Override

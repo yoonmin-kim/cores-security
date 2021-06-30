@@ -38,9 +38,9 @@ public class SecurityResourceService {
     }
 
     @Transactional
-    public LinkedHashMap<String, List<ConfigAttribute>> getMethodResourceList() {
+    public LinkedHashMap<String, List<ConfigAttribute>> getResourceList(String resourceType) {
         LinkedHashMap<String, List<ConfigAttribute>> result = new LinkedHashMap<>();
-        List<Resources> resourcesList = resourcesRepository.findAllMethodResources();
+        List<Resources> resourcesList = findAllResources(resourceType);
         resourcesList.forEach(resource -> {
             List<ConfigAttribute> configAttributesList = new ArrayList<>();
             resource.getRoleSet().forEach(role -> {
@@ -51,7 +51,15 @@ public class SecurityResourceService {
         return result;
     }
 
+    private List<Resources> findAllResources(String resourceType) {
+        if("method".equals(resourceType))
+            return resourcesRepository.findAllMethodResources();
+
+        return resourcesRepository.findAllPointcutResources();
+    }
+
     public List<String> getAccessIpList() {
         return accessIpRepository.findAll().stream().map(accessIp -> accessIp.getIpAddress()).collect(Collectors.toList());
     }
+
 }
