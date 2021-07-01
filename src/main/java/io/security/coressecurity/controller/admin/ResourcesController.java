@@ -5,11 +5,11 @@ import io.security.coressecurity.domain.entity.Resources;
 import io.security.coressecurity.domain.entity.Role;
 import io.security.coressecurity.repository.RoleRepository;
 import io.security.coressecurity.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
+import io.security.coressecurity.service.MethodSecurityService;
 import io.security.coressecurity.service.ResourcesService;
 import io.security.coressecurity.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +27,7 @@ public class ResourcesController {
     private final ResourcesService resourcesService;
     private final RoleRepository roleRepository;
     private final RoleService roleService;
+    private final MethodSecurityService methodSecurityService;
     private final UrlFilterInvocationSecurityMetadatsSource filterInvocationSecurityMetadatsSource;
 
     @GetMapping(value="/admin/resources")
@@ -49,7 +50,11 @@ public class ResourcesController {
         resources.setRoleSet(roles);
 
         resourcesService.createResources(resources);
-        filterInvocationSecurityMetadatsSource.reload();
+        if("url".equals(resourcesDto.getResourceType())) {
+            filterInvocationSecurityMetadatsSource.reload();
+        }else{
+            methodSecurityService.addMethodSecured(resourcesDto.getResourceName(), resourcesDto.getRoleName());
+        }
 
         return "redirect:/admin/resources";
     }
@@ -88,8 +93,11 @@ public class ResourcesController {
 
         Resources resources = resourcesService.getResources(Long.valueOf(id));
         resourcesService.deleteResources(Long.valueOf(id));
-        filterInvocationSecurityMetadatsSource.reload();
-
+        if("url".equals(resources.getResourceType())) {
+            filterInvocationSecurityMetadatsSource.reload();
+        }else{
+            methodSecurityService.removeMethodSecured(resources.getResourceName());
+        }
         return "redirect:/admin/resources";
     }
 }
